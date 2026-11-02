@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { BadgeCheck, Eye, EyeOff, KeyRound, Lock, RefreshCcw, Unlock, MessageSquareText, Copy, Download } from "lucide-react"
 
-import { encrypt, generateKey } from "@/lib/crypto"
+import { buildFile, encrypt, generateKey } from "@/lib/crypto"
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
@@ -51,6 +51,31 @@ export default function Home() {
     setIv(result.ivHex);
     toast.success("Encrypted successfully");
   };
+
+  const fileTimestamp = () => {
+    const timestamp = new Date()
+    return timestamp.toLocaleDateString() + "_" + timestamp.toLocaleTimeString()
+  }
+
+  const handleDownload = () => {
+    if (!cipherText.trim()) {
+      toast.error("Type a message first");
+      return;
+    }
+    const content = buildFile(key, iv, cipherText);
+    const blob = new Blob([content], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    const filename = `encrypted_${fileTimestamp()}.txt`
+    a.download = filename
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    toast.success(`Downloading ${filename}`);
+  }
 
   return (
     <div>
@@ -194,6 +219,7 @@ export default function Home() {
                       <Button
                         size="icon"
                         variant="secondary"
+                        onClick={handleDownload}
                         className="bg-zinc-800 hover:bg-zinc-700 text-zinc-200 h-8 w-8"
                         title="Download .txt file"
                       >
