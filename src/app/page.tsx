@@ -1,7 +1,9 @@
 "use client"
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { BadgeCheck, Eye, EyeOff, KeyRound, Lock, RefreshCcw, Unlock, MessageSquareText, Copy, Download } from "lucide-react"
+
+import { encrypt, generateKey } from "@/lib/crypto"
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
@@ -9,11 +11,47 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
 
 export default function Home() {
-  const [showPassword, setShowPassword] = useState(false);
-  const [showKey, setShowKey] = useState(true);
-  const [activeTab, setActiveTab] = useState("encrypt");
+  const [showKey, setShowKey] = useState(false);
+  const [key, setKey] = useState<string>(() => generateKey());
+  const [plainText, setPlainText] = useState("")
+  const [cipherText, setCipherText] = useState("")
+  const [iv, setIv] = useState("");
+  const [textToDecrypt, setTextToDecrypt] = useState("")
+  const [decryptedText, setDecryptedText] = useState("")
+
+  const handleKeyRegen = () => {
+    const generatedKey = generateKey();
+    setKey(generatedKey)
+    setShowKey(false)
+    toast.success("Key generated successfully!")
+  }
+
+  const handleCopy = async (textToCopy: string, type: "key" | "ciphertext" | "text") => {
+    try {
+      // Copy text to clipboard
+      await navigator.clipboard.writeText(textToCopy);
+      toast.success(`Copied ${type} to clipboard!`);
+    } catch (err) {
+      console.error("Failed to copy text:", err);
+      toast.error(`Failed to copy ${type}. Please try again.`);
+    }
+  };
+
+  const handleEncrypt = () => {
+    if (!plainText.trim()) {
+      toast.error("Type a message first");
+      return;
+    }
+
+    const result = encrypt(plainText, key);
+    setCipherText(result.ciphertext);
+    setIv(result.ivHex);
+    toast.success("Encrypted successfully");
+  };
+
   return (
     <div>
       <div className=" w-[70vw] min-h-[90vh] mx-auto mt-10 bg-zinc-900/50 pb-[2vh] rounded-md ">
@@ -45,7 +83,7 @@ export default function Home() {
                     <Input
                       id="enc-key"
                       readOnly
-                      value="a3f8c2e1b4d74f9e0c...88912b0d"
+                      value={showKey ? key : "•".repeat(key.length)}
                       className="pr-10 bg-zinc-950 border-zinc-800 font-mono text-xs"
                     />
                     <Tooltip>
@@ -69,6 +107,7 @@ export default function Home() {
                         render={
                           <button
                             type="button"
+                            onClick={() => handleCopy(key, "key")}
                             className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-200"
                           >
                             <Copy className="h-4 w-4" />
@@ -83,6 +122,7 @@ export default function Home() {
                   <Button
                     variant="secondary"
                     className="bg-zinc-800 hover:bg-zinc-700 text-zinc-200 shrink-0"
+                    onClick={() => handleKeyRegen()}
                   >
                     <RefreshCcw className="h-4 w-4" />
                     Regenerate
@@ -103,11 +143,16 @@ export default function Home() {
                 <Textarea
                   id="enc-text"
                   rows={5}
+                  value={plainText}
+                  onChange={(e) => setPlainText(e.target.value)}
                   placeholder="Type the text you want to encrypt..."
                   className="bg-zinc-950 border-zinc-800 resize-y"
                 />
 
-                <Button className="w-full bg-zinc-100 hover:bg-white text-zinc-950 font-medium gap-2">
+                <Button
+                  className="w-full bg-zinc-100 hover:bg-white text-zinc-950 font-medium gap-2"
+                  onClick={handleEncrypt}
+                >
                   <Lock className="h-4 w-4" />
                   Encrypt
                 </Button>
@@ -125,6 +170,7 @@ export default function Home() {
                   <Textarea
                     rows={3}
                     readOnly
+                    value={cipherText}
                     placeholder="The encrypted result appears here (base64)..."
                     className="bg-zinc-950 border-zinc-800 font-mono text-xs"
                   />
