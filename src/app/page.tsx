@@ -54,7 +54,12 @@ export default function Home() {
 
   const fileTimestamp = () => {
     const timestamp = new Date()
-    return timestamp.toLocaleDateString() + "_" + timestamp.toLocaleTimeString()
+    const pad = (n: number) => n.toString().padStart(2, "0");
+
+  return (
+    `${timestamp.getFullYear()}-${pad(timestamp.getMonth() + 1)}-${pad(timestamp.getDate())}` +
+    `_${pad(timestamp.getHours())}-${pad(timestamp.getMinutes())}-${pad(timestamp.getSeconds())}`
+  );
   }
 
   const handleDownload = () => {
