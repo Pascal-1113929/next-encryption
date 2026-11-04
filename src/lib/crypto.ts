@@ -50,3 +50,31 @@ export function decodeFileText(text: string) {
     ciphertext: get("ciphertext") ?? "",
   };
 }
+
+export function decrypt(
+  ciphertextB64: string,
+  keyHex: string,
+  ivHex: string
+): string {
+  const key = CryptoJS.enc.Hex.parse(keyHex);
+  const iv = CryptoJS.enc.Hex.parse(ivHex);
+  const words = CryptoJS.enc.Base64.parse(ciphertextB64);
+
+  const result = CryptoJS.AES.decrypt(
+    { ciphertext: words } as unknown as CryptoJS.CipherParams,
+    key,
+    {
+      iv,
+      mode: CryptoJS.mode.CBC,
+      padding: CryptoJS.pad.Pkcs7,
+    }
+  );
+
+  const plain = result.toString(CryptoJS.enc.Utf8);
+
+  if (!plain) {
+    throw new Error("Wrong key or corrupted data");
+  }
+
+  return plain;
+}

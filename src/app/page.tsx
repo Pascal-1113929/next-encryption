@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { BadgeCheck, Eye, EyeOff, KeyRound, Lock, RefreshCcw, Unlock, MessageSquareText, Copy, Download, Upload } from "lucide-react"
 
-import { buildFile, decodeFileText, encrypt, generateKey } from "@/lib/crypto"
+import { buildFile, decodeFileText, decrypt, encrypt, generateKey } from "@/lib/crypto"
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
@@ -89,15 +89,54 @@ export default function Home() {
 
   const handleFileDrop = (file: File) => {
     const reader = new FileReader();
-    reader.onload = () => {
-      const text = reader.result as string;
-      const { keyHex, ivHex, ciphertext } = decodeFileText(text);
 
-      setDecryptKey(keyHex);
-      setDecryptIv(ivHex);
-      setTextToDecrypt(ciphertext);
+    reader.onload = () => {
+      const text = String(reader.result ?? "");
+
+      try {
+        const parsed = decodeFileText(text);
+
+        setDecryptKey(parsed.keyHex);
+        setDecryptIv(parsed.ivHex);
+        setTextToDecrypt(parsed.ciphertext);
+        setDecryptedText("");
+
+        toast.success("Encrypted file loaded");
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Could not read encrypted file");
+      }
     };
+
+    reader.onerror = () => {
+      toast.error("Could not read file");
+    };
+
     reader.readAsText(file);
+  };
+
+  const handleDecrypt = () => {
+    const keyHex = decryptKey.trim();
+    const ivHex = decryptIv.trim();
+    const ciphertext = textToDecrypt.trim();
+
+    if (!keyHex || !ivHex || !ciphertext) {
+      toast.error("Key, IV and encrypted text are all required");
+      return;
+    }
+
+    try {
+      const plain = decrypt(ciphertext, keyHex, ivHex);
+
+      if (!plain) {
+        throw new Error("Decryption produced no readable text");
+      }
+
+      setDecryptedText(plain);
+      toast.success("Decrypted successfully");
+    } catch (err) {
+      setDecryptedText("");
+      toast.error(err instanceof Error ? err.message : "Decryption failed");
+    }
   };
 
   return (
@@ -368,11 +407,31 @@ export default function Home() {
 
                   <Button
                     className="w-full bg-zinc-100 hover:bg-white text-zinc-950 font-medium gap-2"
-                    onClick={handleEncrypt}
+                    onClick={handleDecrypt}
                   >
                     <Lock className="h-4 w-4" />
                     Decrypt
                   </Button>
+                </div>
+              </div>
+            </section>
+            {/* Output */}
+            <section className="w-[50vw] mx-auto mt-10">
+              <h2 className="text-lg">Output</h2>
+              <div className="space-y-2 mt-5">
+                <div className="w-[50vw] mx-auto space-y-2">
+                  <Label className="flex items-center justify-between">
+                    <span>Decrypted Text</span>
+                  </Label>
+                  <div className="relative">
+                    <Textarea
+                      rows={3}
+                      readOnly
+                      value={decryptedText}
+                      placeholder="The decrypted result appears here..."
+                      className="bg-zinc-950 border-zinc-800 font-mono text-xs"
+                    />
+                  </div>
                 </div>
               </div>
             </section>
