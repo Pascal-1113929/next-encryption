@@ -19,6 +19,8 @@ export default function Home() {
   const [plainText, setPlainText] = useState("")
   const [cipherText, setCipherText] = useState("")
   const [iv, setIv] = useState("");
+  const [decryptKey, setDecryptKey] = useState<string>("");
+  const [decryptIv, setDecryptIv] = useState("")
   const [textToDecrypt, setTextToDecrypt] = useState("")
   const [decryptedText, setDecryptedText] = useState("")
 
@@ -56,10 +58,10 @@ export default function Home() {
     const timestamp = new Date()
     const pad = (n: number) => n.toString().padStart(2, "0");
 
-  return (
-    `${timestamp.getFullYear()}-${pad(timestamp.getMonth() + 1)}-${pad(timestamp.getDate())}` +
-    `_${pad(timestamp.getHours())}-${pad(timestamp.getMinutes())}-${pad(timestamp.getSeconds())}`
-  );
+    return (
+      `${timestamp.getFullYear()}-${pad(timestamp.getMonth() + 1)}-${pad(timestamp.getDate())}` +
+      `_${pad(timestamp.getHours())}-${pad(timestamp.getMinutes())}-${pad(timestamp.getSeconds())}`
+    );
   }
 
   const handleDownload = () => {
@@ -272,6 +274,74 @@ export default function Home() {
 
           </TabsContent>
           <TabsContent value={"decrypt"}>
+            <h1 className="text-xl text-center">Decrypt</h1>
+            {/* Input */}
+
+            <section className="w-[50vw] mx-auto">
+              <h2 className="text-lg">Input</h2>
+              {/* Key */}
+              <div className="space-y-2 mt-3">
+                <div className="">
+                  <Label htmlFor="dec-key" className="flex items-center gap-2">
+                    <KeyRound className="h-4 w-4 text-zinc-400" />
+                    Key
+                  </Label>
+                  <div className="flex gap-2">
+                    <div className="relative flex-1">
+                      <Input
+                        id="dec-key"
+                        value={decryptKey}
+                        onChange={(e) => setDecryptKey(e.target.value)}
+                        className="pr-10 bg-zinc-950 border-zinc-800 font-mono text-xs"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {/* IV */}
+              <div className="space-y-2 mt-3">
+                <div className="">
+                  <Label htmlFor="dec-iv" className="flex items-center gap-2">
+                    IV
+                  </Label>
+                  <div className="flex gap-2">
+                    <div className="relative flex-1">
+                      <Input
+                        id="dec-iv"
+                        value={decryptIv}
+                        onChange={(e) => setDecryptIv(e.target.value)}
+                        className="pr-10 bg-zinc-950 border-zinc-800 font-mono text-xs"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {/* Text Input */}
+              <div className="space-y-2 mt-5">
+                <div className="w-[50vw] mx-auto space-y-2">
+                  <Label htmlFor="dec-text" className="flex items-center gap-2">
+                    <MessageSquareText className="h-4 w-4 text-zinc-400" />
+                    Encrypted text
+                  </Label>
+                  <Textarea
+                    id="dec-text"
+                    rows={5}
+                    value={textToDecrypt}
+                    onChange={(e) => setTextToDecrypt(e.target.value)}
+                    placeholder="Type the text you want to encrypt..."
+                    className="bg-zinc-950 border-zinc-800 resize-y"
+                  />
+
+                  <Button
+                    className="w-full bg-zinc-100 hover:bg-white text-zinc-950 font-medium gap-2"
+                    onClick={handleEncrypt}
+                  >
+                    <Lock className="h-4 w-4" />
+                    Decrypt
+                  </Button>
+                </div>
+              </div>
+            </section>
           </TabsContent>
         </Tabs>
       </div>
