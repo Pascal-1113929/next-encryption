@@ -1,9 +1,9 @@
 "use client"
 
-import { useEffect, useState } from "react";
-import { BadgeCheck, Eye, EyeOff, KeyRound, Lock, RefreshCcw, Unlock, MessageSquareText, Copy, Download } from "lucide-react"
+import { useEffect, useRef, useState } from "react";
+import { BadgeCheck, Eye, EyeOff, KeyRound, Lock, RefreshCcw, Unlock, MessageSquareText, Copy, Download, Upload } from "lucide-react"
 
-import { buildFile, encrypt, generateKey } from "@/lib/crypto"
+import { buildFile, decodeFileText, encrypt, generateKey } from "@/lib/crypto"
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import Dropzone from "@/components/dropzone";
 
 export default function Home() {
   const [showKey, setShowKey] = useState(false);
@@ -23,6 +24,8 @@ export default function Home() {
   const [decryptIv, setDecryptIv] = useState("")
   const [textToDecrypt, setTextToDecrypt] = useState("")
   const [decryptedText, setDecryptedText] = useState("")
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleKeyRegen = () => {
     const generatedKey = generateKey();
@@ -83,6 +86,19 @@ export default function Home() {
 
     toast.success(`Downloading ${filename}`);
   }
+
+  const handleFileDrop = (file: File) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const text = reader.result as string;
+      const { keyHex, ivHex, ciphertext } = decodeFileText(text);
+
+      setDecryptKey(keyHex);
+      setDecryptIv(ivHex);
+      setTextToDecrypt(ciphertext);
+    };
+    reader.readAsText(file);
+  };
 
   return (
     <div>
@@ -279,6 +295,24 @@ export default function Home() {
 
             <section className="w-[50vw] mx-auto">
               <h2 className="text-lg">Input</h2>
+              {/* File Upload */}
+              <Dropzone accept={["text/plain"]} onDrop={handleFileDrop} className="w-full rounded-lg border-2 border-dashed border-zinc-700 hover:border-zinc-500 p-8 cursor-pointer transition-colors">
+                <Upload className="h-8 w-8 text-zinc-500 mx-auto mb-3" />
+                <p className="text-sm text-zinc-400 mb-4 text-center">
+                  Drop a <span className="font-mono text-xs text-zinc-300">.txt</span> file here that has encrypted text from this app or browse for one from your device.
+                </p>
+                <div className="flex justify-center">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="border-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:text-white gap-2"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <Upload className="h-4 w-4" />
+                    Browse
+                  </Button>
+                </div>
+              </Dropzone>
               {/* Key */}
               <div className="space-y-2 mt-3">
                 <div className="">
@@ -345,6 +379,18 @@ export default function Home() {
           </TabsContent>
         </Tabs>
       </div>
+      {/* Hidden file browse */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".txt,text/plain"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) handleFileDrop(file);
+          e.target.value = "";
+        }}
+      />
     </div>
   );
 }
