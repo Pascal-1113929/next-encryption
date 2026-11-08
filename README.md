@@ -1,36 +1,97 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Next Encryption
+Web application for symetrical encryption and decryption with an automated key generation. Fully client side 
 
+Build with Next.js, Tupescrypt, shadcn/ui and `crypto-js`.
+
+---
+## Content
+- [Features](#features)
+- [Getting Started](#getting-started)
+- [How It Works](#how-it-works)
+- [Encryption & Decryption](#encryption--decryption)
+- [Export File Format](#export-file-format)
+- [Tech Stack](#tech-stack)
+
+---
+## Features
+| Feature | Description |
+|---------|-------------|
+| **Random key generation** | 256-bit key via `crypto.getRandomValues()` |
+| **Per-message IV** | A fresh 128-bit IV is generated for every encryption call |
+| **Clipboard copy** | Copy key, IV, ciphertext, or decrypted text |
+| **File export** | Download the full encrypted payload as a `.txt` file |
+| **File import** | Drag-and-drop or browse for a `.txt` file to auto-fill all decrypt fields |
+
+---
 ## Getting Started
 
-First, run the development server:
+The Github repository
 
+### Prerequisites
+
+- [Node.js](https://nodejs.org) ≥ 18
+- [pnpm](https://pnpm.io) ≥ 8 (`npm i -g pnpm` if missing)
+
+### Install & Run
+
+#### Clone Repo
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone [https://github.com/Pascal-1113929/next-encryption.git](https://github.com/Pascal-1113929/next-encryption.git)
+cd next-encryption
+
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+#### Install dependencies
+```bash
+pnpm install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+#### Start Server
+```bash
+pnpm dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Open the server on http://localhost:3000.
 
-## Learn More
+---
+## How it works
+The application works by genreating a randop key via `crypto.getRandomValues()`. Using that and a generated IV, it turns plaintext into a ciphertext (using AES-256-CBC). 
+This is botck copy-able for clipboard and downloadable as a `.txt` file with the IV and the Key for easy sharing. 
 
-To learn more about Next.js, take a look at the following resources:
+---
+## Encryption & Decryption
+The application implements symmetric encryption using the **AES-256-CBC** algorithm via the well-tested `crypto-js` library.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Encryption
+1. **Key & IV:** A random 256-bit key is automatically generated using the browser's cryptographically secure pseudo-random number generator (`crypto.getRandomValues()`). For every encryption call, a fresh 128-bit Initialization Vector (IV) is generated.
+2. **Process:** The plaintext message is padded using **PKCS#7** and encrypted with the AES-256 algorithm in **Cipher Block Chaining (CBC)** mode.
+3. **Output:** The resulting ciphertext is formatted into a base64 string and bundled with the key and IV for file export.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Decryption
+1. **Input:** The user provides the encrypted payload by either uploading/dropping the exported `.txt` file or pasting the content directly.
+2. **Parsing:** The application reads the structured text to safely extract the specific `key`, `iv`, and `ciphertext`.
+3. **Process:** Using the extracted key and IV, `crypto-js` reverses the CBC transformation and strips the PKCS#7 padding.
+4. **Output:** The original plaintext message is successfully restored and displayed to the user.
 
-## Deploy on Vercel
+---
+## Export File Format
+Every encrypted message can be exported as a plain-text file:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```txt
+# Encryptie Export
+key: 73f37ad705e53ec14ca059dbf46b5322ab076ae60cb9a652922e65b484f723db
+iv: b128586e50ff5a1c1600f93b25d997e9
+ciphertext: 9lZebLLGbfhFc8kKpcvsJXwcrzXQA01gw0W3eRcz8M57xvWJ...
+algorithm: AES-256-CBC
+created: 2026-11-02T13:13:20.286Z
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+## Tech Stack
+| Layer | Technology |
+|---------|-------------|
+| **Framework** | Next.js 16 (App Router) |
+| **Language** | TypeScript |
+| **UI** | React 19 + shadcn/ui |
+| **Crypto** | crypto-js |
+| **Toasts** | sonner |
