@@ -1,7 +1,7 @@
 # Next Encryption
 Web application for symmetrical encryption and decryption with an automated key generation. Fully client side.
 
-Build with Next.js, Typescrypt, shadcn/ui and `crypto-js`.
+Build with Next.js, TypeScript, shadcn/ui and `crypto-js`.
 
 ---
 ## Content
