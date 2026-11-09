@@ -69,7 +69,7 @@ export default function Home() {
 
   const handleDownload = () => {
     if (!cipherText.trim()) {
-      toast.error("Type a message first");
+      toast.error("Encrypt a message first");
       return;
     }
     const content = buildFile(key, iv, cipherText);
