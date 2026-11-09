@@ -142,7 +142,7 @@ export default function Home() {
   return (
     <div>
       <div className=" w-[70vw] min-h-[90vh] mx-auto mt-10 bg-zinc-900/50 pb-[2vh] rounded-md ">
-        <Tabs className="w-fullmx-auto" defaultValue="all">
+        <Tabs className="w-full mx-auto" defaultValue="all">
           <TabsList className="w-full">
             <TabsTrigger value="encrypt" className="">
               <Lock className="h-4 w-4" />
@@ -275,6 +275,7 @@ export default function Home() {
                         variant="secondary"
                         className="bg-zinc-800 hover:bg-zinc-700 text-zinc-200 h-8 w-8"
                         title="Copy ciphertext"
+                        onClick={() => handleCopy(cipherText, "ciphertext")}
                       >
                         <Copy className="h-4 w-4" />
                       </Button>
