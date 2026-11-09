@@ -27,7 +27,7 @@ Build with Next.js, Typescrypt, shadcn/ui and `crypto-js`.
 ---
 ## Getting Started
 
-The Github repository
+The Github repository is at [https://github.com/Pascal-1113929/next-encryption](https://github.com/Pascal-1113929/next-encryption)
 
 ### Prerequisites
 
@@ -62,7 +62,7 @@ This is both copy-able for clipboard and downloadable as a `.txt` file with the 
 
 ---
 ## Encryption & Decryption
-The application implements symmetric encryption using the **AES-256-CBC** algorithm via the well-tested `crypto-js` library.
+The application implements symmetric encryption using the **AES-256-CBC** algorithm with **PKCS#7** padding via the well-tested `crypto-js` library. The entire encryption/decryption pipeline runs in the browser.
 
 ### Encryption
 1. **Key & IV:** A random 256-bit key is automatically generated using the browser's cryptographically secure pseudo-random number generator (`crypto.getRandomValues()`). For every encryption call, a fresh 128-bit Initialization Vector (IV) is generated.
@@ -120,3 +120,10 @@ The key is only stored in the exported `.txt` file. Not anywhere else without th
 
 ### Exchange
 The key is shared either directly via the user or via the downloadable `.txt` file. 
+
+### Scaling
+With symmetric encryption, every pair of users who want to share messages needs the same key. 
+This means that the key needs to be shared with every user who wants to communicate. 
+
+This application sidesteps the problem by making each message self-contained: the key travels with the ciphertext in the exported file.
+ 
